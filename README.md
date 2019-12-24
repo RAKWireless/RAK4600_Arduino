@@ -71,7 +71,7 @@ Adafruit provides many BLE demos, we open them from File->Examples.
 
 6. Here are the logs of mobile phone and PC。
 
-![ble_mobile_app](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/ble_mobile_app.png) 
+![ble_mobile_app](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/ble_mobile_app.jpg) 
 
 ![ble_pc_tool](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/ble_pc_tool.png) 
 
