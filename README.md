@@ -33,17 +33,29 @@ The following describes how the module builds the development environment in Ard
    It contains gpio maping, serial tool, demo project and Softdevice hex.
 
    - feather_nrf52832: GPIO maping of RAK4600.
-   - Demo: lorawan and ble demo project.
+   - example: lorawan and ble demo project.
    - serial tool: serial tool on PC.
-   - s132_nrf52_6.1.1_softdevice.hex: Sotfdevice hex.
+   - feather_nrf52832_bootloader.hex: Includes sotfdevice and bootloader.
 
 5. Replace your folder with our folder `feather_nrf52832`, your file path maybe 
 
    > %APPDATA%\Local\Arduino15\packages\adafruit\hardware\nrf52\0.14.6\variants
 
-6. The last step is download the softdevice hex file `s132_nrf52_6.1.1_softdevice.hex` to RAK4600 with Jlink or DAP, etc.
+6. The last step is program the bootloader hex file `feather_nrf52832_bootloader.hex` to RAK4600 with Jlink or DAP, etc.
 
 At this point, the development environment is ready.
+
+
+
+## BootLoader
+
+The bootloader of RAK4600 supports the serial port upgrade program. Use the Arduino IDE to upgrade as follows.
+
+1. Connect the pin 18 of MCU to the GND.
+2. After restarting the MCU, disconnect pin 18 from GND. The current state is bootloader mode.
+3. Click the `Upload` button to update the firmware to RAK4600.
+
+![DFU](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/DFU%20Log.png)
 
 
 
@@ -55,17 +67,13 @@ Adafruit provides many BLE demos, we open them from File->Examples.
 
 ![Project](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/ble_examples.png)
 
-2. Click "Sketch->Export complied Binary" to compile project and copy binary file to current directory.
+2. Update firmware with bootloader, View the log through the serial port on the PC.
 
-![Compile](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/Compiling%20project.png) 
-
-3. Download the hex file to RAK4600, View the log through the serial port on the PC.
-
-4. We need to install an app in the mobile phone to connect with the module.
+3. We need to install an app in the mobile phone to connect with the module.
 
    Refer to the following link for installation. [nRF Connect for Mobile - nordicsemi.com](https://www.nordicsemi.com/Software-and-tools/Development-Tools/nRF-Connect-for-mobile)  
 
-5. After the installation is completed, open Bluetooth and app. Scan and connect a device named "bluefruit 52". You can communicate with your device via Bluetooth.
+4. After the installation is completed, open Bluetooth and app. Scan and connect a device named "bluefruit 52". You can communicate with your device via Bluetooth.
 
 ![ble_scan](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/ble_scan.png) 
 
@@ -97,12 +105,16 @@ RAK4600 uses open source protocol stack to realize lorawan communication.
 
 ![Device Parameter](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/LoRa_OTAA_Parameters.png) 
 
-3. Click "Sketch->Export complied Binary" to compile project and copy binary file to current directory.
-
-![Compile](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/Compiling%20project.png) 
-
-4. Download the hex file to RAK4600. When download ok, the RAK4600 will be auto join LoRaWAN and send data.
+3. Update firmware with bootloader. When download ok, the RAK4600 will be auto join LoRaWAN and send data.
 
 ![Run information](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/running%20information.png) 
 
 
+
+## BLE + LoRa example
+
+BLE and LoRa demo is `RAK4600_ble_scan_lora.ino`, Modify the lora parameters to your own, compile and upload it as before.
+
+We can see the following logs.
+
+![Run information](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/ble+lora.png)
