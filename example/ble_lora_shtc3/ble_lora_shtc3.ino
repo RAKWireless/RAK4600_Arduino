@@ -1,56 +1,24 @@
-/*******************************************************************************
- * Copyright (c) 2015 Thomas Telkamp and Matthijs Kooijman
- * Copyright (c) 2018 Terry Moore, MCCI
- *
- * Permission is hereby granted, free of charge, to anyone
- * obtaining a copy of this document and accompanying files,
- * to do whatever they want with them without any restriction,
- * including, but not limited to, copying, modification and redistribution.
- * NO WARRANTY OF ANY KIND IS PROVIDED.
- *
- * This example sends a valid LoRaWAN packet with payload "Hello,
- * world!", using frequency and encryption settings matching those of
- * the The Things Network.
- *
- * This uses OTAA (Over-the-air activation), where where a DevEUI and
- * application key is configured, which are used in an over-the-air
- * activation procedure where a DevAddr and session keys are
- * assigned/generated for use with all further communication.
- *
- * Note: LoRaWAN per sub-band duty-cycle limitation is enforced (1% in
- * g1, 0.1% in g2), but not the TTN fair usage policy (which is probably
- * violated by this sketch when left running for longer)!
+/*********************************************************************
+ This is an example for our nRF52 based Bluefruit LE modules
 
- * To use this sketch, first register your application and device with
- * the things network, to set or generate an AppEUI, DevEUI and AppKey.
- * Multiple devices can use the same AppEUI, but each device has its own
- * DevEUI and AppKey.
- *
- * Do not forget to define the radio type correctly in
- * arduino-lmic/project_config/lmic_project_config.h or from your BOARDS.txt.
- *
- *******************************************************************************/
+ Pick one up today in the adafruit shop!
 
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
+ products from Adafruit!
+
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+
+#include <bluefruit.h>
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
 
 #include "SparkFun_SHTC3.h" // Click here to get the library: http://librarymanager/All#SparkFun_SHTC3
 SHTC3 mySHTC3;              // Declare an instance of the SHTC3 class
-
-//
-// For normal use, we require that you edit the sketch to replace FILLMEIN
-// with values assigned by the TTN console. However, for regression tests,
-// we want to be able to compile these scripts. The regression tests define
-// COMPILE_REGRESSION_TEST, and in that case we define FILLMEIN to a non-
-// working but innocuous value.
-//
-#ifdef COMPILE_REGRESSION_TEST
-//# define FILLMEIN 0000000000000000
-#else
-//# warning "You must replace the values marked FILLMEIN with real values from the TTN control panel!"
-//# define FILLMEIN (#dont edit this, edit the lines that use FILLMEIN)
-#endif
 
 // This EUI must be in little-endian format, so least-significant-byte
 // first. When copying an EUI from ttnctl output, this means to reverse
@@ -69,7 +37,7 @@ void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 static const u1_t PROGMEM APPKEY[16] = { 0xb3,0x8b,0x0d,0xef,0x40,0x38,0x31,0x63,0x1f,0x81,0x34,0x8e,0xeb,0xe6,0x9d,0x66 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
-static uint8_t lora_data[128];
+static uint8_t lora_data[64];
 uint32_t lora_count = 0;
 static osjob_t sendjob;
 
@@ -79,7 +47,7 @@ typedef enum {
 };
 // Schedule TX every this many seconds (might become longer due to duty
 // cycle limitations).
-const unsigned TX_INTERVAL = 10;
+const unsigned TX_INTERVAL = 20;
 
 // Pin mapping
 const lmic_pinmap lmic_pins = {
@@ -106,8 +74,7 @@ void onEvent (ev_t ev) {
             Serial.println(F("EV_BEACON_TRACKED"));
             break;
         case EV_JOINING:
-            //Serial.println(F("EV_JOINING"));
-            Serial.println(F("Start Joining..."));
+            Serial.println(F("LoRa Start Joining..."));
             break;
         case EV_JOINED:
             Serial.println(F("EV_JOINED"));
@@ -131,8 +98,6 @@ void onEvent (ev_t ev) {
                 Serial.print(nwkKey[i], HEX);
               }
               Serial.println("");
-
-              lora_count = 1;
             }
             // Disable link check validation (automatically enabled
             // during join, but because slow data rates change max TX
@@ -206,63 +171,122 @@ void do_send(osjob_t* j){
         Serial.println(F("OP_TXRXPEND, not sending"));
     } else {
         // Prepare upstream data transmission at the next possible time.
-        sensor_value_get();
-        //sprintf((char *)lora_data, "Hello_%d", lora_count++);
-        LMIC_setTxData2(1, lora_data, strlen((char *)lora_data), LORA_CONFIRMED);
+        shtc3_get();
+        LMIC_setTxData2(1, lora_data, lora_count, LORA_UNCONFIRMED);
         Serial.println(F("Packet queued"));
     }
     // Next TX is scheduled after TX_COMPLETE event.
 }
 
-void setup() {
-    Serial.begin(115200);
-    while ( !Serial ) delay(10);
-    Serial.println("\r\n*******************************");
-    Serial.println("System Starting...");
-    Serial.println("");
-
-    /* SHTC3 init */
-    Serial.print("Beginning sensor. Result = ");           // Most SHTC3 functions return a variable of the type "SHTC3_Status_TypeDef" to indicate the status of their execution 
-    errorDecoder(mySHTC3.begin());                              // To start the sensor you must call "begin()", the default settings use Wire (default Arduino I2C port)
-    Wire.setClock(400000);                                      // The sensor is listed to work up to 1 MHz I2C speed, but the I2C clock speed is global for all sensors on that bus so using 400kHz or 100kHz is recommended
-    Serial.println();
-  
-    if(mySHTC3.passIDcrc)                                       // Whenever data is received the associated checksum is calculated and verified so you can be sure the data is true
-    {                                                           // The checksum pass indicators are: passIDcrc, passRHcrc, and passTcrc for the ID, RH, and T readings respectively
-      Serial.print("ID Passed Checksum. ");
-      Serial.print("Device ID: 0b"); 
-      Serial.print(mySHTC3.ID, BIN);                       // The 16-bit device ID can be accessed as a member variable of the object
-    }
-    else
-    {
-      Serial.print("ID Checksum Failed. ");
-    }
-
-    /* LoRa init */
-    // LMIC init
-    os_init();
-    // Reset the MAC state. Session and pending data transfers will be discarded.
-    LMIC_reset();
-
-#if defined(CFG_us915)
-    LMIC_selectSubBand(1);
-#endif
-
-    // Start job (sending automatically starts OTAA too)
-    do_send(&sendjob);
-}
-
-void loop() {
-    os_runloop_once();
-}
-
-void sensor_value_get(void)
+void setup() 
 {
+  Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
+  /* shtc3 init */
+  Serial.println("shtc3 init");
+  Serial.print("Beginning sensor. Result = ");           // Most SHTC3 functions return a variable of the type "SHTC3_Status_TypeDef" to indicate the status of their execution 
+  errorDecoder(mySHTC3.begin());                              // To start the sensor you must call "begin()", the default settings use Wire (default Arduino I2C port)
+  Wire.setClock(400000);                                      // The sensor is listed to work up to 1 MHz I2C speed, but the I2C clock speed is global for all sensors on that bus so using 400kHz or 100kHz is recommended
+  Serial.println();
+
+  if(mySHTC3.passIDcrc)                                       // Whenever data is received the associated checksum is calculated and verified so you can be sure the data is true
+  {                                                           // The checksum pass indicators are: passIDcrc, passRHcrc, and passTcrc for the ID, RH, and T readings respectively
+    Serial.print("ID Passed Checksum. ");
+    Serial.print("Device ID: 0b"); 
+    Serial.println(mySHTC3.ID, BIN);                       // The 16-bit device ID can be accessed as a member variable of the object
+  }
+  else
+  {
+    Serial.println("ID Checksum Failed. ");
+  }
+
+
+  /* LoRa init */
+  Serial.println("LoRa init");
+  // LMIC init
+  os_init();
+  // Reset the MAC state. Session and pending data transfers will be discarded.
+  LMIC_reset();
+
+  #if defined(CFG_us915)
+    LMIC_selectSubBand(1);
+  #endif
+
+  // Start job (sending automatically starts OTAA too)
+  do_send(&sendjob);
+
+
+  /* BLE init */
+  Serial.println("BLE init");
+  // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
+  // SRAM usage required by SoftDevice will increase dramatically with number of connections
+  Bluefruit.begin(0, 1);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
+  Bluefruit.setName("Bluefruit52");
+
+  // Start Central Scan
+  Bluefruit.Scanner.setInterval(3200, 80);       // in units of 0.625 ms
+  Bluefruit.Scanner.setRxCallback(scan_callback);
+  Bluefruit.Scanner.start(6000);  // in units of 10 ms,  0 = Don't stop scanning
+
+  Serial.println("BLE scan 60 seconds...");
+}
+
+void scan_callback(ble_gap_evt_adv_report_t* report)
+{
+  uint8_t buffer[32];
+  memset(buffer, 0, sizeof(buffer));
+
+  // MAC is in little endian --> print reverse
+  Serial.printBufferReverse(report->peer_addr.addr, 6, ':');
+  Serial.print(" ");
+
+  Serial.print(report->rssi);
+  Serial.print("  ");
+
+  Serial.printBuffer(report->data.p_data, report->data.len, '-');
+  Serial.println();
+
+  // Check if advertising contain BleUart service
+  if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
+  {
+    Serial.println("                       BLE UART service detected");
+  }
+
+  Serial.println();
+
+  // For Softdevice v6: after received a report, scanner will be paused
+  // We need to call Scanner resume() to continue scanning
+  Bluefruit.Scanner.resume();
+}
+
+void loop() 
+{
+  os_runloop_once();
+}
+
+void shtc3_get(void)
+{
+  uint8_t cnt = 0;
+  float Temperature,Humidity;
   mySHTC3.update();
   if(mySHTC3.lastStatus == SHTC3_Status_Nominal)              // You can also assess the status of the last command by checking the ".lastStatus" member of the object
   {
-    sprintf((char *)lora_data, "%.2f%%,%.2fF", mySHTC3.toPercent(), mySHTC3.toDegF());
-    lora_count = strlen((char *)lora_data);
+    /* Packing LoRa data */
+    Temperature = mySHTC3.toDegC();
+    Humidity = mySHTC3.toPercent();
+    // temperature
+    lora_data[cnt++] = 0x01;
+    lora_data[cnt++] = 0x67;
+    lora_data[cnt++] = (uint32_t)(Temperature*10)>>8 & 0xFF;
+    lora_data[cnt++] = (uint32_t)(Temperature*10) & 0xFF;
+    // humidity
+    lora_data[cnt++] = 0x02;
+    lora_data[cnt++] = 0x68;
+    lora_data[cnt++] = ((uint32_t)Humidity*2) & 0xff;
+    lora_count = cnt;
+
     Serial.print("RH = "); 
     Serial.print(mySHTC3.toPercent());                   // "toPercent" returns the percent humidity as a floating point number
     Serial.print("% (checksum: "); 
@@ -275,8 +299,8 @@ void sensor_value_get(void)
       Serial.print("fail");
     }
     Serial.print("), T = "); 
-    Serial.print(mySHTC3.toDegF());                        // "toDegF" and "toDegC" return the temperature as a flaoting point number in deg F and deg C respectively 
-    Serial.print(" deg F (checksum: "); 
+    Serial.print(mySHTC3.toDegC());                        // "toDegF" and "toDegC" return the temperature as a flaoting point number in deg F and deg C respectively 
+    Serial.print(" deg C (checksum: "); 
     if(mySHTC3.passTcrc)                                        // Like "passIDcrc" this is true when the T value is valid from the sensor (but not necessarily up-to-date in terms of time)
     {
       Serial.print("pass");
