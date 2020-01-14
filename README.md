@@ -20,7 +20,7 @@ The following describes how the module builds the development environment in Ard
 2. You have known Arduino.  Install the IDE first: 
      [https://www.arduino.cc/en/Main/Software](https://www.arduino.cc/en/Main/Software) 
 
-3. What boards support is used? 
+3. Which BSP is used? 
      RAK4600 is based on nrf52832, therefore Arduino Core for Adafruit Bluefruit nRF52 Boards is suitable for RAK4600. 
 
      Refer to the following link to install Adafruit Bluefruit nRF52 in Arduino.
