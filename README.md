@@ -2,9 +2,11 @@
 
 ## Introduction
 
-RAK4600 LoRa Module includes an nRF52832 MCU and an SX1276 LoRa chip. Its RF communication capabilities (LoRa+BLE) make it suitable for a variety of applications in the IoT field.More details can be found in this：[RAK4600 LoRa Module - RAKwireless Knowledge Hub](https://doc.rakwireless.com/datasheet/rakproducts/rak4600-lora-module-datasheet).
+RAK4600 LoRa Module includes an nRF52832 MCU and an SX1276 LoRa chip. Its RF communication capabilities (LoRa+BLE) make it suitable for a variety of applications in the IoT field.More details can be found in this：
+[RAK4600 LoRa Module - RAKwireless Knowledge Hub](https://doc.rakwireless.com/datasheet/rakproducts/rak4600-lora-module-datasheet).
 
 RAK4600 can be ordered in RAK store:
+
 https://store.rakwireless.com/products/rak4600-lora-module?variant=31767268851757
 
 
