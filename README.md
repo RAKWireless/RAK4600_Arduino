@@ -123,6 +123,10 @@ RAK4600 uses open source protocol stack to realize lorawan communication.
 ![Run information](https://github.com/RAKWireless/RAK4600_Arduino/raw/master/image/running%20information.png) 
 
 
+Please note that the default region is US915, if you want to use another region like EU868, you should open the file "lmic_project_config.h" in the folder <...\Documents\Arduino\libraries\arduino-lmic-master\project_config>, and modify the region to the one you want to use.
+
+![Region](https://github.com/RAKWireless/Update-File/blob/master/Arduino-LoRa%20region%20configuration.PNG)
+
 
 ## BLE + LoRa example
 
