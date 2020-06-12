@@ -56,13 +56,13 @@ At this point, the development environment is ready.
 
 The bootloader of RAK4600 supports the serial port upgrade program. Use the Arduino IDE to upgrade as follows.
 
-1. Connect the pin 18 of MCU to the GND.
-2. After restarting the MCU, disconnect pin 18 from GND. The current state is bootloader mode.
+1. Connect the pin 10 of module to the GND.
+2. After restarting the MCU, disconnect pin 10 from GND. The current state is bootloader mode.
 3. Click the `Upload` button to update the firmware to RAK4600.
 
 **Note**：
 
-​    1. If you use a WisBLOCK board (RAK5005), the silk screen of pin 18 on the back of the board is "**RX1**".
+​    1. If you use a WisBLOCK board (RAK5005), the silk screen of pin 10 on the back of the board is "**RX1**".
 
 ​    2. You can also refer to the following link to customize your own bootloader.[Adafruit_nRF52_Bootloader](https://github.com/adafruit/Adafruit_nRF52_Bootloader) 
 
